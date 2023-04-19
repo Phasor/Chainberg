@@ -2,24 +2,28 @@ import { OpenAI } from "langchain/llms/openai";
 import { MongoClient } from 'mongodb';
 
 export default async function handler(req, res) {
-    const model = new OpenAI({ temperature: 0.9 }, {openAIApiKey: process.env.OPENAI_API_KEY});
+    const model = new OpenAI({ temperature: 0.1 }, {openAIApiKey: process.env.OPENAI_API_KEY});
     const { userQuestion } = req.body;
     console.log(`User question is ${userQuestion}`);
-    const prompt = `You are an AI model that translates natural language queries about United States government treasury bond yields into MongoDB queries. Given a question, you will provide the corresponding MongoDB query.
+    const prompt = `You are an AI model that translates natural language queries about United States government treasury bond yields into MongoDB queries. Given a question, you will provide the corresponding MongoDB query. Do not include anything in your response other than the mongodb query itself.
+    Do not include the words "MongoDB Query" in your response.
 
-    Question: How many times has the 2-year treasury yield been above the 10-year treasury yield? This is called yield curve inversion.
+    Examples:
+
+    Question: How many times has the 2 year treasury yield been above the 10 year treasury yield? This is called yield curve inversion.
     MongoDB Query: [
-        { "$match": { "$expr": { "$gt": ["two_year_yield", "ten_year_yield"] } } }
+        { "$match": { "$expr": { "$gt": ["$two_year_yield", "$ten_year_yield"] } } },
+        { "$count": "two_year_treasury" }
     ]
     
     Question: How many times has the 2-year treasury yield been below the 10-year treasury yield?
     MongoDB Query: [
-        { "$match": { "$expr": { "$lt": ["two_year_yield", "ten_year_yield"] } } }
+        { "$match": { "$expr": { "$lt": ["$two_year_yield", "$ten_year_yield"] } } }
     ]
     
-    Question: Has the 2-year treasury yield ever been higher than the 10-year treasury yield? If so, when?
+    Question: When was the most recent yield curve inversion i.e. the 2-year treasury yield was above the 10-year treasury yield?
     MongoDB Query: [
-        { "$match": { "$expr": { "$gt": ["two_year_yield", "ten_year_yield"] } } },
+        { "$match": { "$expr": { "$gt": ["$two_year_yield", "$ten_year_yield"] } } },
         { "$sort": { "date": -1 } },
         { "$limit": 1 }
     ]
@@ -50,12 +54,13 @@ export default async function handler(req, res) {
     Use the above to produce a MongoDB query for the following question, ensuring you only reply with the MongoDB query, 
     no other words or numbers that are not part of the query. Do not include the word "MongoDB Query:" in your response. Give the dates in your reply where appropriate.
     
-    ${userQuestion}`;
+    User question: ${userQuestion}`;
 
     const response = await model.generate([prompt]);
     const mongoQuery = response.generations[0][0].text.replace('MongoDB Query: ', '').trim();
     // Remove trailing commas from arrays in JSON strings
     const cleanedMongoQuery = mongoQuery.replace(/\,\s*\]/g, ']');
+    console.log(`MongoDB query is ${mongoQuery}`);
 
     console.log(`MongoDB query is ${cleanedMongoQuery}`);
     const uri = process.env.MONGO_URI;
