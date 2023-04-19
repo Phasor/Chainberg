@@ -20,7 +20,7 @@ export default function Home() {
     })
     const data = await res.json();
     console.log(data);
-    setReply(JSON.stringify(data));
+    setReply(data.query);
   }
 
   const handleChange = (e) => {
