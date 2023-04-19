@@ -10,12 +10,18 @@
   },
   "dependencies": {
     "autoprefixer": "10.4.14",
+    "d3-dsv": "^2.0.0",
     "eslint": "8.38.0",
     "eslint-config-next": "13.3.0",
+    "langchain": "^0.0.59",
+    "mongoose": "^7.0.4",
     "next": "13.3.0",
     "postcss": "8.4.22",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "tailwindcss": "3.3.1"
+  },
+  "devDependencies": {
+    "fast-csv": "^4.3.6"
   }
 }
