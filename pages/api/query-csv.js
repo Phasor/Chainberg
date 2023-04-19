@@ -1,15 +1,16 @@
-import { CSVLoader } from "langchain/document_loaders/fs/csv";
+import { OpenAI } from "langchain/llms/openai";
 
-const loader = new CSVLoader("../../treasury_data.csv");
-const docs = await loader.load();
-
-const prompt = `You are an AI model that translates natural language queries about united states governemnt treasury bond yields into MongoDB queries. Given a question, you will provide the corresponding MongoDB query.
+export default async function handler(req, res) {
+    const model = new OpenAI({ temperature: 0.9 }, {openAIApiKey: process.env.OPENAI_API_KEY});
+    const { userQuestion } = req.body;
+    console.log(`User question is ${userQuestion}`);
+    const prompt = `You are an AI model that translates natural language queries about United States government treasury bond yields into MongoDB queries. Given a question, you will provide the corresponding MongoDB query.
 
     Question: How many times has the 2-year treasury yield been above the 10-year treasury yield? This is called yield curve inversion.
-    MongoDB Query: { $expr: { $gt: ['$2 year yield', '$10 year yield'] } }
+    MongoDB Query: { $expr: { $gt: ["two_year_yield", "ten_year_yield"] } }
 
     Question: How many times has the 2-year treasury yield been below the 10-year treasury yield?
-    MongoDB Query: { $expr: { $lt: ['$two_year_yield', '$ten_year_yield'] } }
+    MongoDB Query: { $expr: { $lt: ["two_year_yield", "ten_year_yield"] } }
 
     Question: What is the highest yield the 2-year treasury yield has reached over the last 1 year?
     MongoDB Query:
@@ -20,8 +21,8 @@ const prompt = `You are an AI model that translates natural language queries abo
             ],
             $sort: { two_year_yield: -1 },
             $limit: 1
-        }      
-    
+        } 
+
     Question: What is the highest yield the 2-year treasury yield has reached over the last 2 years?
     MongoDB Query:
         {
@@ -32,12 +33,17 @@ const prompt = `You are an AI model that translates natural language queries abo
             $sort: { two_year_yield: -1 },
             $limit: 1
         }
-      
+
     Question: What is the highest yield the 10-year treasury yield has reached over the entire dataset?
     MongoDB Query: { $sort: { ten_year_yield: -1 }, $limit: 1 }
-`;
 
+    Use the above to produce a MongoDB query for the following question, ensuring you only reply with the MongoDB query, 
+    no other words or numbers that are not part of the query:
 
-export default function handler(req, res) {
-    res.status(200).json({ name: 'John Doe' })
-  }
+    ${userQuestion}`;
+
+    const response = await model.generate([prompt]);
+    const mongoQuery = response.generations[0][0].text.replace('MongoDB Query: ', '');
+    console.log(mongoQuery);
+    res.status(200).json({ query: mongoQuery});
+}
