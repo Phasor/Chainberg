@@ -20,7 +20,7 @@ export default function Home() {
     })
     const data = await res.json();
     console.log(data);
-    setReply(data.query);
+    setReply(data.message);
   }
 
   const handleChange = (e) => {
@@ -32,23 +32,27 @@ export default function Home() {
   }
 
   return (
-    <div className='w-screen min-h-screen flex justify-center items-center'>
+    <div className='w-screen min-h-screen flex justify-center items-center bg-[#121212]'>
       <div className="flex flex-col justify-center items-center">
-        <h1 className='text-3xl w-full text-white text-center '>Ask A Question About the 2 and 10 Year Treasury Yields</h1>
-        <div className='w-[60vw] p-10 flex flex-col justify-center border rounded-lg shadow-xl mt-10 '>
+        <h1 className='text-6xl w-full text-white text-center'>Chainberg</h1>
+        <h2 className='text-xl w-full text-white text-center my-4'>Ask A Question About the 2 and 10 Year Treasury Yields</h2>
+        <div className='w-[60vw] p-10 flex flex-col justify-center border rounded-lg shadow-xl mt-5 '>
           <form onSubmit={handleSubmit}
             className="flex flex-col justify-center"
           >
-            <label className="text-left">Question</label>
+            <label className="text-left text-xl">Question</label>
             <input 
               onChange={handleChange}
-              className="my-2 text-gray-800 py-1 px-1" type="text" 
+              className="my-2 text-gray-800 py-2 px-1" type="text border rounded-md" 
+              placeholder="What is the highest yield the 2-year treasury yield has reached over the last 1 year?"
               value={input}
             />
-            <button type="submit" className="w-[200px] py-1 px-3 border border-white rounded-md mt-4 hover:bg-white hover:text-black">Submit</button>
-            <button onClick={handleClear} className="w-[200px] py-1 px-3 border border-white rounded-md mt-4 hover:bg-white hover:text-black">Clear</button>
+            <div className='flex space-x-5'>
+              <button type="submit" className="w-[200px] py-1 px-3 border border-white rounded-md mt-4 hover:bg-white hover:text-black">Submit</button>
+              <button onClick={handleClear} className="w-[200px] py-1 px-3 border border-white rounded-md mt-4 hover:bg-white hover:text-black">Clear</button>
+            </div>
           </form>
-          <div className="w-full p-4 mt-5">
+          <div className="w-full mt-5">
             <div className="whitespace-pre-wrap">
               <p className="text-xl">Reply</p>
               <p className="text-lg">{reply}</p>
