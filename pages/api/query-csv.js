@@ -51,16 +51,14 @@ export default async function handler(req, res) {
             { "$limit": 1 }
         ]
     
-    Use the above to produce a MongoDB query for the following question, ensuring you only reply with the MongoDB query, 
-    no other words or numbers that are not part of the query. Do not include the word "MongoDB Query:" in your response. Give the dates in your reply where appropriate.
+    Use the above to produce a MongoDB query for the following question. Do NOT include the words "MongoDB Query:" in your response. Just return the query itself.
     
     User question: ${userQuestion}`;
 
     const response = await model.generate([prompt]);
     const mongoQuery = response.generations[0][0].text.replace('MongoDB Query: ', '').trim();
     // Remove trailing commas from arrays in JSON strings
-    const cleanedMongoQuery = mongoQuery.replace(/\,\s*\]/g, ']');
-    console.log(`MongoDB query is ${mongoQuery}`);
+    const cleanedMongoQuery = mongoQuery.replace(/MongoDB Query:\s*(\[[^\]]*])/g, '$1').replace(/\,\s*\]/g, ']');
 
     console.log(`MongoDB query is ${cleanedMongoQuery}`);
     const uri = process.env.MONGO_URI;
